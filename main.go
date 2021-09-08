@@ -22,7 +22,7 @@ func main() {
 	err := lock.Lock()
 	panicWhenError(err)
 
-	for i := 0; i < 6; i++ {
+	for i := 0; i < 3; i++ {
 		log.Infof("Doing some exclusive work #%d", i)
 		time.Sleep(20 * time.Second)
 	}

@@ -12,8 +12,10 @@ const (
 )
 
 type Locker struct {
-	key   string
-	mutex *AzureMutex
+	key      string
+	mutex    *AzureMutex
+	cancel   chan bool
+	canceled chan bool
 }
 
 func NewLocker(accountName string, accountKey string, containerName string, key string) *Locker {
@@ -38,7 +40,11 @@ func (l *Locker) Lock() error {
 
 func (l *Locker) Unlock() error {
 	l.stopRenew()
-	return l.mutex.Release(l.key)
+	err := l.mutex.Release(l.key)
+	if err == nil {
+		log.Debugf("Lease released")
+	}
+	return err
 }
 
 func (l *Locker) waitLock() error {
@@ -57,15 +63,26 @@ func (l *Locker) waitLock() error {
 }
 
 func (l *Locker) startRenew() {
+	l.cancel = make(chan bool)
+	l.canceled = make(chan bool)
 	go func() {
 		for {
-			time.Sleep(renewIntervalSeconds * time.Second)
-			l.mutex.Renew(l.key)
-			log.Debugf("Lease renewed")
+			select {
+			case <-time.After(renewIntervalSeconds * time.Second):
+				l.mutex.Renew(l.key)
+				log.Debugf("Lease renewed")
+				break
+			case <-l.cancel:
+				log.Debugf("Stopping renewing . . .")
+				l.canceled <- true
+				return
+			}
 		}
 	}()
 }
 
 func (l *Locker) stopRenew() {
-	// TODO some channels magic for graceful goroutine shutdown
+	l.cancel <- true
+	<-l.canceled
+	log.Debugf("Stopped")
 }

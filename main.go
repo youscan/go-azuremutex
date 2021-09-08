@@ -22,12 +22,19 @@ func main() {
 	log.Println("Doing some exclusive work")
 	time.Sleep(1 * time.Second)
 
-	mutex.Release("test")
+	log.Println("Renewing lock")
+	err = mutex.Renew("test")
+	panicWhenError(err)
+	time.Sleep(10 * time.Second)
+
+	log.Println("Releasing lock")
+	err = mutex.Release("test")
+	panicWhenError(err)
 }
 
 func panicWhenError(err error) {
 	if err != nil {
-		log.Fatalf("Can't continue %v", err)
+		log.Fatalf("Can't continue: %v", err)
 		log.Exit(-1)
 	}
 }

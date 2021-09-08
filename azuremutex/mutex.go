@@ -16,10 +16,6 @@ type AzureMutex struct {
 	containerReference *azblob.ContainerURL
 }
 
-const (
-	leaseDuration      = 30
-)
-
 func NewMutex(accountName string, accountKey string, container string) *AzureMutex {
 	mutex := AzureMutex{
 		accountName:   accountName,
@@ -30,7 +26,7 @@ func NewMutex(accountName string, accountKey string, container string) *AzureMut
 	return &mutex
 }
 
-func (m *AzureMutex) Acquire(key string) error {
+func (m *AzureMutex) Acquire(key string, leaseDuration int32) error {
 
 	var err error
 	m.containerReference, err = m.createContainerURL()

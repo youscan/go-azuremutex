@@ -16,7 +16,7 @@ func main() {
 	log.Println("Acquiring mutex")
 
 	mutex := azuremutex.NewMutex(accountName, accountKey, container)
-	err := mutex.Acquire("test")
+	err := mutex.Acquire("test", 15)
 	panicWhenError(err)
 
 	log.Println("Doing some exclusive work")

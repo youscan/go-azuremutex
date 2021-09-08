@@ -7,11 +7,27 @@ import (
 )
 
 func main() {
-	log.Println("Hello")
+	const (
+		accountName = "*****"
+		accountKey  = "*****"
+		container   = "locks"
+	)
 
-	mutex := azuremutex.NewMutex("...")
-	mutex.Acquire()
+	log.Println("Acquiring mutex")
+
+	mutex := azuremutex.NewMutex(accountName, accountKey, container)
+	err := mutex.Acquire("test")
+	panicWhenError(err)
+
 	log.Println("Doing some exclusive work")
-	time.Sleep(3 * time.Second)
-	mutex.Release()
+	time.Sleep(1 * time.Second)
+
+	mutex.Release("test")
+}
+
+func panicWhenError(err error) {
+	if err != nil {
+		log.Fatalf("Can't continue %v", err)
+		log.Exit(-1)
+	}
 }

@@ -6,29 +6,29 @@ import (
 	"time"
 )
 
+func init() {
+	log.SetLevel(log.DebugLevel)
+}
+
 func main() {
 	const (
 		accountName = "*****"
 		accountKey  = "*****"
 		container   = "locks"
 	)
+	lock := azuremutex.NewLocker(accountName, accountKey, container, "test")
 
-	log.Println("Acquiring mutex")
-
-	mutex := azuremutex.NewMutex(accountName, accountKey, container)
-	err := mutex.Acquire("test", 15)
+	log.Println("Waiting for a lock . . .")
+	err := lock.Lock()
 	panicWhenError(err)
 
-	log.Println("Doing some exclusive work")
-	time.Sleep(1 * time.Second)
-
-	log.Println("Renewing lock")
-	err = mutex.Renew("test")
-	panicWhenError(err)
-	time.Sleep(10 * time.Second)
+	for i := 0; i < 6; i++ {
+		log.Infof("Doing some exclusive work #%d", i)
+		time.Sleep(20 * time.Second)
+	}
 
 	log.Println("Releasing lock")
-	err = mutex.Release("test")
+	err = lock.Unlock()
 	panicWhenError(err)
 }
 

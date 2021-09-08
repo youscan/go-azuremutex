@@ -16,11 +16,11 @@ type AzureMutex struct {
 	containerReference *azblob.ContainerURL
 }
 
-func NewMutex(accountName string, accountKey string, container string) *AzureMutex {
+func NewMutex(accountName string, accountKey string, containerName string) *AzureMutex {
 	mutex := AzureMutex{
 		accountName:   accountName,
 		accountKey:    accountKey,
-		containerName: container,
+		containerName: containerName,
 		ctx:           context.Background(),
 	}
 	return &mutex
@@ -40,11 +40,17 @@ func (m *AzureMutex) Acquire(key string, leaseDuration int32) error {
 
 	blob := m.containerReference.NewBlockBlobURL(key)
 	_, err = azblob.UploadBufferToBlockBlob(m.ctx, []byte{}, blob, azblob.UploadToBlockBlobOptions{})
+	if stgErr, ok := err.(azblob.StorageError); ok && stgErr.ServiceCode() == "LeaseIdMissing" {
+		return NewLeaseAlreadyPresentError(err)
+	}
 	if err != nil {
 		return err
 	}
 
 	response, err := blob.AcquireLease(m.ctx, "", leaseDuration, azblob.ModifiedAccessConditions{})
+	if stgErr, ok := err.(azblob.StorageError); ok && stgErr.ServiceCode() == "LeaseAlreadyPresent" {
+		return NewLeaseAlreadyPresentError(err)
+	}
 	if err != nil {
 		return err
 	}

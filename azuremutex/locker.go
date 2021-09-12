@@ -1,6 +1,7 @@
 package azuremutex
 
 import (
+	"context"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -12,16 +13,21 @@ const (
 )
 
 type Locker struct {
-	key      string
-	mutex    *AzureMutex
-	cancel   chan bool
-	canceled chan bool
+	key          string
+	mutex        *AzureMutex
+	ctx          context.Context
+	cancel       context.CancelFunc
+	cancelChan   chan bool
+	canceledChan chan bool
 }
 
 func NewLocker(accountName string, accountKey string, containerName string, key string) *Locker {
+	ctx, cancel := context.WithCancel(context.Background())
 	spinLock := Locker{
-		key:   key,
-		mutex: NewMutex(accountName, accountKey, containerName),
+		key:    key,
+		ctx:    ctx,
+		cancel: cancel,
+		mutex:  NewMutexWithContext(accountName, accountKey, containerName, ctx),
 	}
 	return &spinLock
 }
@@ -63,8 +69,8 @@ func (l *Locker) waitLock() error {
 }
 
 func (l *Locker) startRenew() {
-	l.cancel = make(chan bool)
-	l.canceled = make(chan bool)
+	l.cancelChan = make(chan bool)
+	l.canceledChan = make(chan bool)
 	go func() {
 		for {
 			select {
@@ -72,9 +78,9 @@ func (l *Locker) startRenew() {
 				l.mutex.Renew(l.key)
 				log.Debugf("Lease renewed")
 				break
-			case <-l.cancel:
+			case <-l.cancelChan:
 				log.Debugf("Stopping renewing . . .")
-				l.canceled <- true
+				l.canceledChan <- true
 				return
 			}
 		}
@@ -82,7 +88,7 @@ func (l *Locker) startRenew() {
 }
 
 func (l *Locker) stopRenew() {
-	l.cancel <- true
-	<-l.canceled
+	l.cancelChan <- true
+	<-l.canceledChan
 	log.Debugf("Stopped")
 }

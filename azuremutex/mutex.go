@@ -17,13 +17,16 @@ type AzureMutex struct {
 }
 
 func NewMutex(accountName string, accountKey string, containerName string) *AzureMutex {
-	mutex := AzureMutex{
+	return NewMutexWithContext(accountName, accountKey, containerName, context.Background())
+}
+
+func NewMutexWithContext(accountName string, accountKey string, containerName string, ctx context.Context) *AzureMutex {
+	return &AzureMutex{
 		accountName:   accountName,
 		accountKey:    accountKey,
 		containerName: containerName,
-		ctx:           context.Background(),
+		ctx:           ctx,
 	}
-	return &mutex
 }
 
 func (m *AzureMutex) Acquire(key string, leaseDuration int32) error {

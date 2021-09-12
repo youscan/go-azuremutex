@@ -22,10 +22,11 @@ func main() {
 	err := lock.Lock()
 	panicWhenError(err)
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 2; i++ {
 		log.Infof("Doing some exclusive work #%d", i)
-		time.Sleep(20 * time.Second)
+		time.Sleep(15 * time.Second)
 	}
+	log.Info("Work done")
 
 	log.Println("Releasing lock")
 	err = lock.Unlock()

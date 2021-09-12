@@ -6,6 +6,24 @@ import (
 	"testing"
 )
 
+var options = MutexOptions{
+	ContainerName:      "locks",
+	UseStorageEmulator: true,
+}
+
+func TestAzureMutex(t *testing.T) {
+	mutex := NewMutex(options)
+
+	err := mutex.Acquire("mutex", 15)
+	assert.NoError(t, err)
+
+	err = mutex.Renew("mutex")
+	assert.NoError(t, err)
+
+	err = mutex.Release("mutex")
+	assert.NoError(t, err)
+}
+
 func TestConcurrentIncrement(t *testing.T) {
 	const (
 		threads    = 5
@@ -20,11 +38,6 @@ func TestConcurrentIncrement(t *testing.T) {
 
 	for i := 0; i < threads; i++ {
 		go func() {
-
-			options := MutexOptions{
-				ContainerName:      "locks",
-				UseStorageEmulator: true,
-			}
 			lock := NewLocker(options, "test")
 			err := lock.Lock()
 			assert.NoError(t, err)

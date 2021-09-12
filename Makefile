@@ -1,4 +1,4 @@
-tests: start-storage-emulator
+test:
 	go test -v ./...
 
 lint:

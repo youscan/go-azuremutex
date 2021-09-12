@@ -9,3 +9,7 @@ start-storage-emulator:
 
 stop-storage-emulator:
 	docker stop azurite
+
+# brew install act
+test-github-actions:
+	act

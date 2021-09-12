@@ -25,7 +25,18 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.17
+      - name: Install NPM
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install Azurite
+        run: npm install -g azurite
+      - name: Start Azurite
+        shell: bash
+        run: azurite-blob &
+      - name: Wait for Azurite starts
+        run: sleep 5 && curl http://localhost:10000/
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Test

@@ -19,7 +19,7 @@ jobs:
 
   test:
     name: test
-    timeout-minutes: 10
+    timeout-minutes: 1
     runs-on: ubuntu-latest
     steps:
       - name: Install Go

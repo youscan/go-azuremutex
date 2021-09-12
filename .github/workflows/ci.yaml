@@ -16,27 +16,24 @@ jobs:
         uses: golangci/golangci-lint-action@v2
         with:
           version: latest
-
   test:
     name: test
-    timeout-minutes: 1
+    timeout-minutes: 2
     runs-on: ubuntu-latest
+    services:
+      azurite:
+        image: mcr.microsoft.com/azure-storage/azurite
+        ports:
+          - 10000:10000
+        # No simple reciept to curl it, so, let;'s just wait'
+        options: >-
+          --health-cmd "sleep 5"
+          --health-interval 3s
     steps:
       - name: Install Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.17
-      - name: Install NPM
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-      - name: Install Azurite
-        run: npm install -g azurite
-      - name: Start Azurite
-        shell: bash
-        run: azurite-blob &
-      - name: Wait for Azurite starts
-        run: sleep 5 && curl http://localhost:10000/
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Test

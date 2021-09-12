@@ -18,10 +18,10 @@ Top-level abstractions that support background renewal of the acquired lease.
 
 ## Locker Usage
 
-Import the module
+Installation
 
 ```
-import "github.com/youscan/go-azuremutex"
+go get -u github.com/youscan/go-azuremutex
 ```
 
 Configuration

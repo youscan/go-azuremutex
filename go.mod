@@ -1,4 +1,4 @@
-module github.com/youscan/azure-mutex
+module github.com/youscan/go-azuremutex
 
 go 1.17
 

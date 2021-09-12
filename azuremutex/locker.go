@@ -20,12 +20,12 @@ type Locker struct {
 	cancelRequired chan *sync.WaitGroup
 }
 
-func NewLocker(accountName string, accountKey string, containerName string, key string) *Locker {
+func NewLocker(options MutexOptions, key string) *Locker {
 	ctx, cancel := context.WithCancel(context.Background())
 	spinLock := Locker{
 		key:           key,
 		cancelContext: cancel,
-		mutex:         NewMutexWithContext(accountName, accountKey, containerName, ctx),
+		mutex:         NewMutexWithContext(options, ctx),
 	}
 	return &spinLock
 }

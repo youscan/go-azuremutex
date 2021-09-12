@@ -7,25 +7,28 @@ import (
 	"github.com/Azure/azure-storage-blob-go/azblob"
 )
 
+type MutexOptions struct {
+	AccountName        string
+	AccountKey         string
+	ContainerName      string
+	UseStorageEmulator bool
+}
+
 type AzureMutex struct {
 	ctx                context.Context
-	accountName        string
-	accountKey         string
-	containerName      string
+	options            MutexOptions
 	leaseId            string
 	containerReference *azblob.ContainerURL
 }
 
-func NewMutex(accountName string, accountKey string, containerName string) *AzureMutex {
-	return NewMutexWithContext(accountName, accountKey, containerName, context.Background())
+func NewMutex(options MutexOptions) *AzureMutex {
+	return NewMutexWithContext(options, context.Background())
 }
 
-func NewMutexWithContext(accountName string, accountKey string, containerName string, ctx context.Context) *AzureMutex {
+func NewMutexWithContext(options MutexOptions, ctx context.Context) *AzureMutex {
 	return &AzureMutex{
-		accountName:   accountName,
-		accountKey:    accountKey,
-		containerName: containerName,
-		ctx:           ctx,
+		options: options,
+		ctx:     ctx,
 	}
 }
 

@@ -11,13 +11,12 @@ func init() {
 }
 
 func main() {
-	const (
-		accountName = "*****"
-		accountKey  = "*****"
-		container   = "locks"
-	)
-	lock := azuremutex.NewLocker(accountName, accountKey, container, "test")
 
+	options := azuremutex.MutexOptions{
+		ContainerName:      "locks",
+		UseStorageEmulator: true,
+	}
+	lock := azuremutex.NewLocker(options, "test")
 	log.Println("Waiting for a lock . . .")
 	err := lock.Lock()
 	panicWhenError(err)

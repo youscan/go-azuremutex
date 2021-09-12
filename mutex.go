@@ -12,6 +12,7 @@ type MutexOptions struct {
 	AccountKey         string
 	ContainerName      string
 	UseStorageEmulator bool
+	LogFunc            func(message string)
 }
 
 type AzureMutex struct {

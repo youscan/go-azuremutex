@@ -2,7 +2,7 @@ package azuremutex
 
 import (
 	"context"
-	log "github.com/sirupsen/logrus"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -20,14 +20,20 @@ type Locker struct {
 	cancelRequired chan *sync.WaitGroup
 }
 
+func (l *Locker) log(message string) {
+	if l.mutex.options.LogFunc != nil {
+		l.mutex.options.LogFunc(message)
+	}
+}
+
 func NewLocker(options MutexOptions, key string) *Locker {
 	ctx, cancel := context.WithCancel(context.Background())
-	spinLock := Locker{
+	locker := Locker{
 		key:           key,
 		cancelContext: cancel,
 		mutex:         NewMutexWithContext(options, ctx),
 	}
-	return &spinLock
+	return &locker
 }
 
 func (l *Locker) Lock() error {
@@ -46,10 +52,10 @@ func (l *Locker) Unlock() error {
 	l.stopRenew()
 	err := l.mutex.Release(l.key)
 	if err == nil {
-		log.Debugf("Lease released")
+		l.log("Lease released")
 	}
 	defer l.cancelContext()
-	log.Debugf("Unlocked")
+	l.log("Unlocked")
 	return err
 }
 
@@ -57,12 +63,12 @@ func (l *Locker) waitLock() error {
 	for {
 		err := l.mutex.Acquire(l.key, leaseDurationSeconds)
 		if _, ok := err.(*LeaseAlreadyPresentError); ok {
-			log.Debugf("Lock already acquired. Waiting . . .")
+			l.log("Lock already acquired. Waiting . . .")
 			time.Sleep(acquireInterval * time.Second)
 			continue
 		}
 		if err == nil {
-			log.Debugf("Locked it!")
+			l.log("Locked it!")
 		}
 		return err
 	}
@@ -78,13 +84,13 @@ func (l *Locker) startRenew() {
 				err := l.mutex.Renew(l.key)
 				// TODO: Handle transient errors gently, don't just pass
 				if err != nil {
-					log.Debugf("Could not renew: %v", err)
+					l.log(fmt.Sprintf("Could not renew: %v", err))
 					break
 				}
-				log.Debug("Lease renewed")
+				l.log("Lease renewed")
 				break
 			case wg = <-l.cancelRequired:
-				log.Debug("Stopping renewing . . .")
+				l.log("Stopping renewing . . .")
 				wg.Done()
 				return
 			}

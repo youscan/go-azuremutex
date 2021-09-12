@@ -18,10 +18,12 @@ func TestConcurrentIncrement(t *testing.T) {
 	var count1 int
 	var count2 int
 
+	options := getMutexOptionsForTests(t)
+
 	for i := 0; i < threads; i++ {
 		go func() {
-			lock := NewLocker(options, "test")
-			err := lock.Lock()
+			locker := NewLocker(options, "test")
+			err := locker.Lock()
 			assert.NoError(t, err)
 			if err != nil {
 				return
@@ -32,7 +34,7 @@ func TestConcurrentIncrement(t *testing.T) {
 				count2 += 2
 			}
 
-			err = lock.Unlock()
+			err = locker.Unlock()
 			assert.NoError(t, err)
 
 			wg.Done()

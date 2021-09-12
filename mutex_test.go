@@ -5,13 +5,18 @@ import (
 	"testing"
 )
 
-var options = MutexOptions{
-	ContainerName:      "locks",
-	UseStorageEmulator: true,
+func getMutexOptionsForTests(t *testing.T) MutexOptions {
+	return MutexOptions{
+		ContainerName:      "locks",
+		UseStorageEmulator: true,
+		LogFunc: func(message string) {
+			t.Logf(message)
+		},
+	}
 }
 
 func TestMutex(t *testing.T) {
-	mutex := NewMutex(options)
+	mutex := NewMutex(getMutexOptionsForTests(t))
 
 	err := mutex.Acquire("mutex", 15)
 	assert.NoError(t, err)

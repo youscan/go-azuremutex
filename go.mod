@@ -4,7 +4,6 @@ go 1.17
 
 require (
 	github.com/Azure/azure-storage-blob-go v0.14.0
-	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.2.2
 )
 

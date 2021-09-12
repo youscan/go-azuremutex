@@ -75,11 +75,16 @@ func (l *Locker) startRenew() {
 		for {
 			select {
 			case <-time.After(renewIntervalSeconds * time.Second):
-				l.mutex.Renew(l.key)
-				log.Debugf("Lease renewed")
+				err := l.mutex.Renew(l.key)
+				// TODO: Handle transient errors gently, don't just pass
+				if err != nil {
+					log.Debugf("Could not renew: %v", err)
+					break
+				}
+				log.Debug("Lease renewed")
 				break
 			case wg = <-l.cancelRequired:
-				log.Debugf("Stopping renewing . . .")
+				log.Debug("Stopping renewing . . .")
 				wg.Done()
 				return
 			}

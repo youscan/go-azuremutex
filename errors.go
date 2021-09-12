@@ -1,4 +1,4 @@
-package azuremutex
+package azmutex
 
 type LeaseAlreadyPresentError struct {
 	Err error

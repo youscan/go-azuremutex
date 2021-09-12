@@ -1,4 +1,4 @@
-package azuremutex
+package azmutex
 
 import (
 	"github.com/stretchr/testify/assert"

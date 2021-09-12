@@ -1,5 +1,5 @@
 tests: start-storage-emulator
-	go test -race -v ./...
+	go test -v ./...
 
 lint:
 	golangci-lint run

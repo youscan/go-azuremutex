@@ -41,6 +41,9 @@ func TestConcurrentIncrement(t *testing.T) {
 			lock := NewLocker(options, "test")
 			err := lock.Lock()
 			assert.NoError(t, err)
+			if err != nil {
+				return
+			}
 
 			for i := 0; i < operations; i++ {
 				count1++

@@ -1,6 +1,6 @@
 # Distributed Mutex on Azure Lease Blobs
 
-[![CI](https://github.com/youscan/go-azuremutex/actions/workflows/ci.yaml/badge.svg)](https://github.com/youscan/azure-mutex/actions/workflows/ci.yaml)
+[![CI](https://github.com/youscan/go-azuremutex/actions/workflows/ci.yaml/badge.svg)](https://github.com/youscan/azure-mutex/actions/workflows/ci.yaml) [![Go Reference](https://pkg.go.dev/badge/github.com/youscan/go-azuremutex.svg)](https://pkg.go.dev/github.com/youscan/go-azuremutex)
 
 This package implements distributed lock available for multiple processes. Possible use-cases include exclusive access to shared data, leader election, etc.
 

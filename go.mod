@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/Azure/azure-storage-blob-go v0.14.0
-	github.com/stretchr/testify v1.2.2
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
@@ -16,4 +16,5 @@ require (
 	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.8 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

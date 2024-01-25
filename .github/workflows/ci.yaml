@@ -16,7 +16,7 @@ jobs:
         uses: golangci/golangci-lint-action@v3
         with:
           version: latest
-  test:
+  release:
     name: test
     timeout-minutes: 2
     runs-on: ubuntu-latest
@@ -38,3 +38,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Test
         run: go test -v ./...
+      - name: Get tag name
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/v}
+      - name: Create release
+        if: steps.vars.outputs.tag != null
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          prerelease: false
+          draft: false

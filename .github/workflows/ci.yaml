@@ -41,7 +41,7 @@ jobs:
       - name: Get tag name
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         id: vars
-        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/v}
+        run: echo "name=${GITHUB_REF#refs/*/v}" >> $GITHUB_OUTPUT
       - name: Create release
         if: steps.vars.outputs.tag != null
         uses: softprops/action-gh-release@v1

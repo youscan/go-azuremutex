@@ -3,8 +3,8 @@ module github.com/youscan/go-azuremutex
 go 1.17
 
 require (
-	github.com/Azure/azure-storage-blob-go v0.14.0
-	github.com/stretchr/testify v1.2.2
+	github.com/Azure/azure-storage-blob-go v0.15.0
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
@@ -13,7 +13,8 @@ require (
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20191112182307-2180aed22343 // indirect
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/net v0.0.0-20210610132358-84b48f89b13b // indirect
+	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
+	golang.org/x/text v0.3.6 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -24,6 +24,16 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    services:
+      azurite:
+        image: mcr.microsoft.com/azure-storage/azurite
+        ports:
+          - 10000:10000
+        # No simple reciept to curl it, so, let's just wait for it to be up
+        options: >-
+          --health-cmd "sleep 5"
+          --health-interval 3s
+
     permissions:
       actions: read
       contents: read

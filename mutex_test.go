@@ -10,7 +10,7 @@ func getMutexOptionsForTests(t *testing.T) MutexOptions {
 		ContainerName:      "locks",
 		UseStorageEmulator: true,
 		LogFunc: func(message string) {
-			t.Logf(message)
+			t.Logf("%s", message)
 		},
 	}
 }

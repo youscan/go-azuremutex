@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-24.04
     services:
       azurite:
-        image: mcr.microsoft.com/azure-storage/azurite
+        image: mcr.microsoft.com/azure-storage/azurite:latest # 3.32.0
         ports:
           - 10000:10000
         # No simple reciept to curl it, so, let's just wait for it to be up
@@ -24,7 +24,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.17
+          go-version: 1.18
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:

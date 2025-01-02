@@ -2,6 +2,7 @@ package azmutex
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -62,7 +63,8 @@ func (l *Locker) Unlock() error {
 func (l *Locker) waitLock() error {
 	for {
 		err := l.mutex.Acquire(l.key, leaseDurationSeconds)
-		if _, ok := err.(*LeaseAlreadyPresentError); ok {
+		var leaseAlreadyPresentError *LeaseAlreadyPresentError
+		if errors.As(err, &leaseAlreadyPresentError) {
 			l.log("Lock already acquired. Waiting . . .")
 			time.Sleep(acquireInterval * time.Second)
 			continue

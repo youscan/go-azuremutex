@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob"
+	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/container"
 	"github.com/Azure/azure-sdk-for-go/sdk/storage/azblob/lease"
 	"net/url"
 )
@@ -38,10 +39,9 @@ type MutexOptions struct {
 }
 
 type AzureMutex struct {
-	ctx         context.Context
-	options     MutexOptions
-	client      *azblob.Client
-	leaseClient *lease.BlobClient
+	ctx          context.Context
+	options      MutexOptions
+	leaseClients map[string]*lease.BlobClient
 }
 
 func NewMutex(options MutexOptions) *AzureMutex {
@@ -50,8 +50,9 @@ func NewMutex(options MutexOptions) *AzureMutex {
 
 func NewMutexWithContext(options MutexOptions, ctx context.Context) *AzureMutex {
 	return &AzureMutex{
-		options: options,
-		ctx:     ctx,
+		options:      options,
+		ctx:          ctx,
+		leaseClients: make(map[string]*lease.BlobClient),
 	}
 }
 
@@ -78,11 +79,7 @@ func (m *AzureMutex) createClient() (*azblob.Client, error) {
 	return client, nil
 }
 
-func (m *AzureMutex) createContainerIfNotExists() error {
-	if m.client == nil {
-		return fmt.Errorf("containerClient not initialized")
-	}
-	containerClient := m.client.ServiceClient().NewContainerClient(m.options.ContainerName)
+func (m *AzureMutex) createContainerIfNotExists(containerClient *container.Client) error {
 	_, err := containerClient.Create(m.ctx, &azblob.CreateContainerOptions{
 		Access: nil, // Public access disabled when not specified explicitly
 	})
@@ -94,18 +91,18 @@ func (m *AzureMutex) createContainerIfNotExists() error {
 }
 
 func (m *AzureMutex) Acquire(key string, leaseDuration int32) error {
-
 	var err error
-	m.client, err = m.createClient()
+	client, err := m.createClient()
 	if err != nil {
 		return err
 	}
-	err = m.createContainerIfNotExists()
+	containerClient := client.ServiceClient().NewContainerClient(m.options.ContainerName)
+	err = m.createContainerIfNotExists(containerClient)
 	if err != nil {
 		return err
 	}
 
-	_, err = m.client.UploadBuffer(m.ctx, m.options.ContainerName, key, []byte{}, &azblob.UploadBufferOptions{})
+	_, err = client.UploadBuffer(m.ctx, m.options.ContainerName, key, []byte{}, &azblob.UploadBufferOptions{})
 
 	var stgErr *azcore.ResponseError
 	if errors.As(err, &stgErr) && stgErr.ErrorCode == "LeaseIdMissing" {
@@ -115,7 +112,6 @@ func (m *AzureMutex) Acquire(key string, leaseDuration int32) error {
 		return err
 	}
 
-	containerClient := m.client.ServiceClient().NewContainerClient(m.options.ContainerName)
 	blobClient := containerClient.NewBlobClient(key)
 	leaseClient, err := lease.NewBlobClient(blobClient, &lease.BlobClientOptions{})
 	if err != nil {
@@ -129,26 +125,27 @@ func (m *AzureMutex) Acquire(key string, leaseDuration int32) error {
 		return err
 	}
 
-	m.leaseClient = leaseClient
+	m.leaseClients[key] = leaseClient
 	return nil
 }
 
 func (m *AzureMutex) Renew(key string) error {
-	if m.leaseClient == nil {
-		return fmt.Errorf("lock not aquired")
+	leaseClient, exists := m.leaseClients[key]
+	if !exists {
+		return fmt.Errorf("lock not acquired for key: %s", key)
 	}
-
-	_, err := m.leaseClient.RenewLease(m.ctx, &lease.BlobRenewOptions{})
+	_, err := leaseClient.RenewLease(m.ctx, &lease.BlobRenewOptions{})
 
 	return err
 }
 
 func (m *AzureMutex) Release(key string) error {
-	if m.leaseClient == nil {
-		return fmt.Errorf("lock not aquired")
+	leaseClient, exists := m.leaseClients[key]
+	if !exists {
+		return fmt.Errorf("lock not acquired for key: %s", key)
 	}
 
-	_, err := m.leaseClient.ReleaseLease(m.ctx, &lease.BlobReleaseOptions{})
+	_, err := leaseClient.ReleaseLease(m.ctx, &lease.BlobReleaseOptions{})
 
 	return err
 }

@@ -87,10 +87,9 @@ func (l *Locker) startRenew() {
 				// TODO: Handle transient errors gently, don't just pass
 				if err != nil {
 					l.log(fmt.Sprintf("Could not renew: %v", err))
-					break
+				} else {
+					l.log("Lease renewed")
 				}
-				l.log("Lease renewed")
-				break
 			case wg = <-l.cancelRequired:
 				l.log("Stopping renewing . . .")
 				wg.Done()

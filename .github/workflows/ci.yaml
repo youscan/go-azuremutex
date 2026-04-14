@@ -40,7 +40,7 @@ jobs:
         run: echo "name=${GITHUB_REF#refs/*/v}" >> $GITHUB_OUTPUT
       - name: Create release
         if: steps.tag.outputs.name != null
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           generate_release_notes: true
           prerelease: false
